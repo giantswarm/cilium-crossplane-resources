@@ -1,12 +1,7 @@
-name: cilium-crossplane-resources
-serviceType: managed
+aws_eni_mode:
+  enabled: false
 
-project:
-  branch: "[[ .Branch ]]"
-  commit: "[[ .SHA ]]"
+cluster:
+  name:
 
-image:
-  registry: quay.io
-  name: giantswarm/cilium-crossplane-resources
-  tag: v0.0.1
-  pullPolicy: IfNotPresent
+# Other values are taken from the Crossplane config map (managed by https://github.com/giantswarm/aws-crossplane-cluster-config-operator)

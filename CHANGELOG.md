@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- changed: `app.giantswarm.io` label group was changed to `application.giantswarm.io`
+### Added
+
+- Add AWS security group for pod network (secondary CIDR) used in Cilium ENI mode
 
 [Unreleased]: https://github.com/giantswarm/cilium-crossplane-resources/tree/main

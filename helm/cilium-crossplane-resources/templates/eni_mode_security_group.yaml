@@ -1,0 +1,94 @@
+{{- if (required "aws_eni_mode.enabled is required"  .Values.aws_eni_mode.enabled) }}
+# For pod CIDR block, see https://github.com/giantswarm/cilium-app/blob/main/helm/cilium/templates/cilium-cni-configmap.yaml
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroup
+metadata:
+  name: {{ printf "%s-pods" (required "cluster.name is required" .Values.cluster.name) | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: {{ .Values.cluster.name | quote }}
+  forProvider:
+    name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    description: "Pod network" # immutable
+    region: {{ required "region is required" .Values.region | quote }}
+    tags:
+      # Used as tag selectors in https://github.com/giantswarm/cilium-app/blob/main/helm/cilium/templates/cilium-cni-configmap.yaml
+      {{ printf "kubernetes.io/cluster/%s" .Values.cluster.name | quote }}: owned
+      sigs.k8s.io/cluster-api-provider-aws/association: secondary
+      Name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    vpcId: {{ required "awsCluster.vpcId is required (provided by aws-crossplane-cluster-config-operator once the VPC was created by CAPA)" (.Values.awsCluster).vpcId }}
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
+  name: {{ printf "%s-control-plane-to-pods" .Values.cluster.name | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: {{ .Values.cluster.name | quote }}
+  forProvider:
+    securityGroupIdRef:
+      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    description: "Allow traffic from control plane nodes to pods"
+    region: {{ required "region is required" .Values.region | quote }}
+    tags: {}
+    referencedSecurityGroupId: {{ required "awsCluster.securityGroups.controlPlane.id is required (provided by aws-crossplane-cluster-config-operator once the SG was created by CAPA)" (((.Values.awsCluster).securityGroups).controlPlane).id }}
+
+    ipProtocol: "-1" # all protocols
+    fromPort: -1
+    toPort: -1
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
+  name: {{ printf "%s-pods-to-pods" .Values.cluster.name | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: {{ .Values.cluster.name | quote }}
+  forProvider:
+    securityGroupIdRef:
+      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    description: "Allow traffic from pod to pod"
+    region: {{ required "region is required" .Values.region | quote }}
+    tags: {}
+    referencedSecurityGroupIdRef:
+      name: {{ printf "%s-pods" .Values.cluster.name | quote }} # self
+
+    ipProtocol: "-1" # all protocols
+    fromPort: -1
+    toPort: -1
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupEgressRule
+metadata:
+  name: {{ printf "%s-pods-to-pods" .Values.cluster.name | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: {{ .Values.cluster.name | quote }}
+  forProvider:
+    securityGroupIdRef:
+      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    description: "Allow all outbound traffic from pods"
+    region: {{ required "region is required" .Values.region | quote }}
+    tags: {}
+
+    cidrIpv4: "0.0.0.0/0"
+    ipProtocol: "-1" # all protocols
+    fromPort: -1
+    toPort: -1
+{{- end }}
