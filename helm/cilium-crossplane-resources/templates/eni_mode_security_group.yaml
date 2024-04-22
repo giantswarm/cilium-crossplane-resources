@@ -3,39 +3,39 @@
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroup
 metadata:
-  name: {{ printf "%s-pods" (required "cluster.name is required" .Values.cluster.name) | quote }}
+  name: {{ printf "%s-pods" (required "clusterName is required" .Values.clusterName) | quote }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   deletionPolicy: Delete
   providerConfigRef:
-    name: {{ .Values.cluster.name | quote }}
+    name: {{ .Values.clusterName | quote }}
   forProvider:
-    name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+    name: {{ printf "%s-pods" .Values.clusterName | quote }}
     description: "Pod network" # immutable
     region: {{ required "region is required" .Values.region | quote }}
     tags:
       # Used as tag selectors in https://github.com/giantswarm/cilium-app/blob/main/helm/cilium/templates/cilium-cni-configmap.yaml
-      {{ printf "kubernetes.io/cluster/%s" .Values.cluster.name | quote }}: owned
+      {{ printf "kubernetes.io/cluster/%s" .Values.clusterName | quote }}: owned
       sigs.k8s.io/cluster-api-provider-aws/association: secondary
-      Name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+      Name: {{ printf "%s-pods" .Values.clusterName | quote }}
     vpcId: {{ required "awsCluster.vpcId is required (provided by aws-crossplane-cluster-config-operator once the VPC was created by CAPA)" (.Values.awsCluster).vpcId }}
 ---
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupIngressRule
 metadata:
-  name: {{ printf "%s-control-plane-to-pods" .Values.cluster.name | quote }}
+  name: {{ printf "%s-control-plane-to-pods" .Values.clusterName | quote }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   deletionPolicy: Delete
   providerConfigRef:
-    name: {{ .Values.cluster.name | quote }}
+    name: {{ .Values.clusterName | quote }}
   forProvider:
     securityGroupIdRef:
-      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+      name: {{ printf "%s-pods" .Values.clusterName | quote }}
     description: "Allow traffic from control plane nodes to pods"
     region: {{ required "region is required" .Values.region | quote }}
     tags: {}
@@ -48,22 +48,22 @@ spec:
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupIngressRule
 metadata:
-  name: {{ printf "%s-pods-to-pods" .Values.cluster.name | quote }}
+  name: {{ printf "%s-pods-to-pods" .Values.clusterName | quote }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   deletionPolicy: Delete
   providerConfigRef:
-    name: {{ .Values.cluster.name | quote }}
+    name: {{ .Values.clusterName | quote }}
   forProvider:
     securityGroupIdRef:
-      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+      name: {{ printf "%s-pods" .Values.clusterName | quote }}
     description: "Allow traffic from pod to pod"
     region: {{ required "region is required" .Values.region | quote }}
     tags: {}
     referencedSecurityGroupIdRef:
-      name: {{ printf "%s-pods" .Values.cluster.name | quote }} # self
+      name: {{ printf "%s-pods" .Values.clusterName | quote }} # self
 
     ipProtocol: "-1" # all protocols
     fromPort: -1
@@ -72,17 +72,17 @@ spec:
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupEgressRule
 metadata:
-  name: {{ printf "%s-pods-to-pods" .Values.cluster.name | quote }}
+  name: {{ printf "%s-pods-to-pods" .Values.clusterName | quote }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
   deletionPolicy: Delete
   providerConfigRef:
-    name: {{ .Values.cluster.name | quote }}
+    name: {{ .Values.clusterName | quote }}
   forProvider:
     securityGroupIdRef:
-      name: {{ printf "%s-pods" .Values.cluster.name | quote }}
+      name: {{ printf "%s-pods" .Values.clusterName | quote }}
     description: "Allow all outbound traffic from pods"
     region: {{ required "region is required" .Values.region | quote }}
     tags: {}

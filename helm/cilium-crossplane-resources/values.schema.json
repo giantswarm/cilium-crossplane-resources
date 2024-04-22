@@ -9,14 +9,6 @@
                     "type": "boolean"
                 }
             }
-        },
-        "cluster": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
         }
     }
 }
