@@ -2,6 +2,6 @@ aws_eni_mode:
   enabled: false
 
 cluster:
-  name:
+  name: ""
 
 # Other values are taken from the Crossplane config map (managed by https://github.com/giantswarm/aws-crossplane-cluster-config-operator)
