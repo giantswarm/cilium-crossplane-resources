@@ -3,6 +3,6 @@ name: cilium-crossplane-resources
 description: Included by cluster-aws to provide certain features that depend on Crossplane values
 home: https://github.com/giantswarm/cilium-crossplane-resources
 icon: https://s.giantswarm.io/app-icons/crossplane/1/dark.svg
-version: 0.1.0
+version: 0.2.0
 annotations:
   application.giantswarm.io/team: phoenix
