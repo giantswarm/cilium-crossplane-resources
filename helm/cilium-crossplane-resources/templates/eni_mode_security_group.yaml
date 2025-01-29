@@ -48,6 +48,29 @@ spec:
 apiVersion: ec2.aws.upbound.io/v1beta1
 kind: SecurityGroupIngressRule
 metadata:
+  name: {{ printf "%s-node-to-pods" .Values.clusterName | quote }}
+  namespace: {{ $.Release.Namespace | quote }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deletionPolicy: Delete
+  providerConfigRef:
+    name: {{ .Values.clusterName | quote }}
+  forProvider:
+    securityGroupIdRef:
+      name: {{ printf "%s-pods" .Values.clusterName | quote }}
+    description: "Allow traffic from worker nodes to pods"
+    region: {{ required "region is required" .Values.region | quote }}
+    tags: {}
+    referencedSecurityGroupId: {{ required "awsCluster.securityGroups.node.id is required (provided by aws-crossplane-cluster-config-operator once the SG was created by CAPA)" (((.Values.awsCluster).securityGroups).node).id }}
+
+    ipProtocol: "-1" # all protocols
+    fromPort: -1
+    toPort: -1
+---
+apiVersion: ec2.aws.upbound.io/v1beta1
+kind: SecurityGroupIngressRule
+metadata:
   name: {{ printf "%s-pods-to-pods" .Values.clusterName | quote }}
   namespace: {{ $.Release.Namespace | quote }}
   labels:
