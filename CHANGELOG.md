@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.2] - 2026-07-02
 
+### Changed
+
+- CircleCI: Update `architect-orb` so this chart also gets pushed to the OCI registry.
+
 ## [0.2.1] - 2025-04-10
 
 ### Added
